@@ -18,6 +18,7 @@ app.use(express.urlencoded());
 ///routing
 app.use("/user", userRouter )
 
+
 //basic landing page route  
 app.get("/",(req, res)=>{
     res.send("Hello there !!! we finally ran TS code") ;
@@ -33,16 +34,16 @@ mongoose.connect(process.env.MONGO_URI!)
 
 //lets check if its working -- creating a user
 
-const createFirstUser : ()=>void = ()=>{
-    const result : Promise<void> = UserModel.create({
-        username : "Atharva" ,
-        password : "Atharva@123"
-    })
-    .then(()=>{console.log("User Created")})
-    .catch(()=>console.log("Cannot create a user")) ;
-}
+// const createFirstUser : ()=>void = ()=>{
+//     const result : Promise<void> = UserModel.create({
+//         username : "Atharva" ,
+//         password : "Atharva@123"
+//     })
+//     .then(()=>{console.log("User Created")})
+//     .catch(()=>console.log("Cannot create a user")) ;
+// }
 
-createFirstUser() ;
+// createFirstUser() ;
 
 //starting server
 app.listen(port, ()=>{

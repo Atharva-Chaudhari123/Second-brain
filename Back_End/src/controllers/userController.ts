@@ -1,7 +1,8 @@
 import mongoose from "mongoose";
 import UserModel, {IUser} from "../models/userModel.js";
 import { Request, Response } from "express";
-import z, {ZodError} from "zod";
+import z, {treeifyError, ZodError} from "zod";
+import { error } from "console";
 
 const userSignUpSchema = z.object({
     username: z.string()
@@ -39,9 +40,9 @@ export async function handleUserSignUP(req : Request<UserSignUpBody> , res : Res
 
         if(error instanceof ZodError){
             console.log("Error In inputs") ;
-            res.json({status : 411 , message : error.message , error : error.issues}) ;
+            res.json({status : 411 , message : "Error in Input" , error : error.issues}) ;
         }else if (error.code === 11000) {
-            // This is the specific condition for a duplicate key error
+            //this credentials alredy exist in the database
             console.error("Duplicate Key Error:", error.message);
             res.status(403).json({ status: 403, message: "A user with this username already exists." });
         } 
@@ -51,7 +52,26 @@ export async function handleUserSignUP(req : Request<UserSignUpBody> , res : Res
         }
     }
 
-   
+}
 
+export async function handleUserSignIn(req : Request, res : Response){ 
+
+    try{    
+        const {username , password} = req.body ;
+        const user =await  UserModel.findOne({username}) ;
+
+        const isMatch = await user?.comparePassword(password) ;
+
+        if ( isMatch){
+            //this means user exist 
+            res.status(200).json({status:200 , message:"User found" }) ;   
+        }
+        else{
+            res.status(404).json({status:404 , message : "User not found"}) ;
+        }
+
+    }catch(error : any){
+        res.status(500).json({status : 500 , message : "Error or user not found", error})
+    }
 
 }
