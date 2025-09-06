@@ -1,8 +1,8 @@
 import mongoose from "mongoose";
 import UserModel, {IUser} from "../models/userModel.js";
 import { Request, Response } from "express";
-import z, {treeifyError, ZodError} from "zod";
-import { error } from "console";
+import z, { ZodError} from "zod";
+import {generateJWTToken} from '../middlewares/auth.js' ;
 
 const userSignUpSchema = z.object({
     username: z.string()
@@ -20,7 +20,7 @@ const userSignUpSchema = z.object({
 // Infer the type for robust type-checking.
 type UserSignUpBody = z.infer<typeof userSignUpSchema>;
 
-export async function handleUserSignUP(req : Request<UserSignUpBody> , res : Response  ){
+export async function handleUserSignUP(req : Request<{},{},UserSignUpBody> , res : Response  ){
 
     try{
         console.log("Reached controller function") ;
@@ -32,9 +32,10 @@ export async function handleUserSignUP(req : Request<UserSignUpBody> , res : Res
             password : validatedData.password  
         }) ;
 
-        await user.save() ;
-
-        res.status(200).json({status : 200 , message : "User created successfully :) "});
+        const savedUser : IUser = await user.save() ;
+        
+        const token = generateJWTToken(savedUser) ;
+        res.status(200).json({status : 200 , message : "User created successfully :) ", token});
 
     }catch(error : any){
 
@@ -57,9 +58,13 @@ export async function handleUserSignUP(req : Request<UserSignUpBody> , res : Res
 export async function handleUserSignIn(req : Request, res : Response){ 
 
     try{    
+        //cheking payload
+        // console.log(req.userPayload) ;
+        
         const {username , password} = req.body ;
+        
         const user =await  UserModel.findOne({username}) ;
-
+        
         const isMatch = await user?.comparePassword(password) ;
 
         if ( isMatch){
