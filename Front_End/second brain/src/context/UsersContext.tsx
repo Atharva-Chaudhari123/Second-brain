@@ -2,7 +2,7 @@
 import React, {useState} from "react";
 
 
-interface IUserData{
+export interface IUserData{
     JWTtoken : string | null,
     username : string | null,
 }
@@ -17,16 +17,17 @@ const defaultValue : IUserData = {
     username : localStorage.getItem("USERNAME"),
 } ;
 
-export const UserContex = React.createContext<IAuthContext | undefined>(undefined) ;
+
+export const UserContext = React.createContext<IAuthContext | undefined>(undefined) ;
 
 
 export const UserContexProvider = (props : React.PropsWithChildren)=>{
 
     let [user, setUser] = useState(defaultValue) ;
     return (
-       < UserContex.Provider value={{user, setUser}} >
+       < UserContext.Provider value={{user, setUser}} >
         {props.children}
-       </UserContex.Provider>
+       </UserContext.Provider>
 
     );
 }

@@ -1,13 +1,25 @@
 import { useState } from "react";
 import { User, Lock, Brain, Eye, EyeOff } from "lucide-react";
 import axios, { AxiosError, type AxiosResponse } from "axios";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { useContext } from "react";
+import { UserContext, type IUserData } from "../../context/UsersContext";
 
+const navigate = useNavigate() ;
 // Define the shape of the sign-up form data.
 interface SignUpFormData {
   username: string;
   password: string;
 }
+
+// configuring  context
+const context = useContext(UserContext) ;
+
+if(!context){
+  throw new Error("Context must be set ") ;
+}
+const {setUser} = context ;
+
 
 export default function SignUp() {
   const [formData, setFormData] = useState<SignUpFormData>({
@@ -48,6 +60,12 @@ export default function SignUp() {
         localStorage.setItem("JWT_TOKEN", res.data.token) ;
         localStorage.setItem("USERNAME", res.data.username) ;
         console.log(res) ;
+        const user : IUserData = {
+          username : res.data.username ,
+          JWTtoken : res.data.token
+        } ;
+        navigate("/home") ;
+
     })
     .catch((res : any)=>{
         console.log( "Error occurred ", res ) ;

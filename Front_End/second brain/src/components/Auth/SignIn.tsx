@@ -2,12 +2,25 @@ import { useState } from "react";
 import { User, Lock, Brain, Eye, EyeOff } from "lucide-react";
 import axios, { AxiosError, type AxiosResponse } from "axios";
 import { Link } from "react-router-dom";
+import { useContext } from "react";
+import { UserContext, type IUserData } from '../../context/UsersContext'
+
 
 // Define the shape of the sign-up form data.
 interface SignInFormData {
   username: string;
   password: string;
 }
+const context = useContext(UserContext);
+
+  // Check the variable for null or undefined before using it.
+  if (!context) {
+    throw new Error('SignIn component must be used within a UserContextProvider.');
+  }
+
+  const { setUser } = context;
+
+  
 
 export default function SignIn() {
   const [formData, setFormData] = useState<SignInFormData>({
@@ -31,29 +44,40 @@ export default function SignIn() {
     e.preventDefault();
     setIsLoading(true);
     setMessage(""); // Clear any previous messages.
-    
+
     // Simulate API call
     await new Promise(resolve => setTimeout(resolve, 1500));
-    const username :string  = formData.username ;
-    const password :string  = formData.password ;
-    if( username.length < 3){
-        return setMessage("Username must be more than 3 characters") ;
+    const username: string = formData.username;
+    const password: string = formData.password;
+    if (username.length < 3) {
+      return setMessage("Username must be more than 3 characters");
     }
-    if(password.length < 8){
-        return setMessage("Password must be more than 8 characters") ;
+    if (password.length < 8) {
+      return setMessage("Password must be more than 8 characters");
     }
-    await axios.post("http://localhost:8000/user/signin", formData) 
-    .then((res : AxiosResponse)=>{
+    await axios.post("http://localhost:8000/user/signin", formData)
+      .then((res: AxiosResponse) => {
         setMessage("success : " + res.data.message);
-        localStorage.setItem("JWT_TOKEN", res.data.token) ;
-        console.log(res) ;
-    })
-    .catch((res : any)=>{
-        console.log( "Error occurred ", res ) ;
-        setMessage("Error : " +  res.response.data.message ) ;
-    }) ;
-    
-    
+        localStorage.setItem("JWT_TOKEN", res.data.token);
+        localStorage.setItem("USERNAME", res.data.username);
+
+        console.log(res);
+        
+        const obj : IUserData = {
+          username : res.data.username,
+          JWTtoken : res.data.token
+        } 
+
+        //setting up context
+        setUser(obj) ;
+
+      })
+      .catch((res: any) => {
+        console.log("Error occurred ", res);
+        setMessage("Error : " + res.response.data.message);
+      });
+
+
     setIsLoading(false);
   };
 
@@ -96,7 +120,7 @@ export default function SignIn() {
                 <Lock className="w-5 h-5 text-purple-300" />
               </div>
               <input
-                type={ "password" }
+                type={"password"}
                 name="password"
                 value={formData.password}
                 onChange={handleInputChange}
@@ -142,7 +166,7 @@ export default function SignIn() {
             <p className="text-purple-200 text-sm">
               Dont have an account?{" "}
               <button className="text-pink-300 hover:text-pink-200 font-medium transition-colors">
-                 <Link to={"/signup"}> Sign Up </Link>
+                <Link to={"/signup"}> Sign Up </Link>
               </button>
             </p>
           </div>
