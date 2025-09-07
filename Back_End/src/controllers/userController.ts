@@ -35,7 +35,7 @@ export async function handleUserSignUP(req : Request<{},{},UserSignUpBody> , res
         const savedUser : IUser = await user.save() ;
         
         const token = generateJWTToken(savedUser) ;
-        res.status(200).json({status : 200 , message : "User created successfully :) ", token});
+        res.status(200).json({status : 200 , message : "User created successfully :) ", token, username: validatedData.username});
 
     }catch(error : any){
 
@@ -55,27 +55,39 @@ export async function handleUserSignUP(req : Request<{},{},UserSignUpBody> , res
 
 }
 
-export async function handleUserSignIn(req : Request, res : Response){ 
+export async function handleUserSignIn(req : Request<{}, {}, UserSignUpBody>, res : Response){ 
 
     try{    
-        //cheking payload
-        // console.log(req.userPayload) ;
         
-        const {username , password} = req.body ;
-        
-        const user =await  UserModel.findOne({username}) ;
-        
-        const isMatch = await user?.comparePassword(password) ;
+        //reusing userSignUpSchema for sing in
+        const validatedData = userSignUpSchema.parse(req.body) ;
+        const validCreds  = {
+            username : validatedData.username ,
+            password : validatedData.password
+        }
 
+        const user = await  UserModel.findOne({username : validCreds.username}) ;
+        if(user == null ) throw new Error("No user with the provided credentials") ;
+
+        
+        const isMatch = await user.comparePassword(validCreds.password) ;
         if ( isMatch){
-            //this means user exist 
-            res.status(200).json({status:200 , message:"User found" }) ;   
+            //this means user entered correct password and username
+            const token : string  = generateJWTToken(user) ; 
+            res.status(200).json({status:200 , message:"User found", token, username : validCreds.username }) ;   
+            // token = "invalid JWT_Secret" if  jwt secret not available 
         }
         else{
-            res.status(404).json({status:404 , message : "User not found"}) ;
+            res.status(404).json({status:404 , message : "Incorrect Password or Username"}) ;
         }
 
     }catch(error : any){
+        if(error instanceof ZodError){
+            res.status(401).json({status :401 , message : "Error in inputs" , errors :  error.issues}) ;
+        }
+        if(error.code == 11 ){
+            res.status(404).json({status : 404 , message : "User not found", error}) ;
+        } 
         res.status(500).json({status : 500 , message : "Error or user not found", error})
     }
 

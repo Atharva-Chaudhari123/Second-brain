@@ -2,8 +2,8 @@ import express, {Express} from "express";
 import dotenv from "dotenv";
 import mongoose from 'mongoose' ;
 import UserModel, { type IUser } from "./models/userModel.js";
-import {Router as userRouter} from './routes/userRoutes.js'
-
+import {Router as userRouter} from './routes/userRoutes.js';
+import cors from 'cors' ;
 
 //configs and constants
 dotenv.config() ;
@@ -11,6 +11,7 @@ const app: Express = express() ;
 const port:  number | undefined | string = process.env.PORT ;
 
 //middlewares
+app.use(cors()) ;
 app.use(express.json()) ;
 app.use(express.urlencoded());
 

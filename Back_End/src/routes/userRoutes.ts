@@ -7,7 +7,7 @@ export const Router  = express.Router() ;
 
 
 Router.post("/signup", handleUserSignUP) ;
-Router.post("/signin", JWTAuthMiddleware , handleUserSignIn) ;
+Router.post("/signin", handleUserSignIn) ;
 
 
 

@@ -36,9 +36,10 @@ export const JWTAuthMiddleware = (req: Request, res: Response, next: NextFunctio
 };
 
 
-export const generateJWTToken = (userData: IUser) => {
+export const generateJWTToken = (userData: IUser ) => {
 
     try {
+        //ts thinks we are lying about the JWT secret
         if (!process.env.JWT_SECRET) {
             throw new Error("Server configuration Error : JWT Secret not available");
         }
@@ -54,6 +55,8 @@ export const generateJWTToken = (userData: IUser) => {
 
     } catch (error: any) {
         console.log("Error while creating JWT token, JWT Secret not found");
-
+        
+        // suppose jwt key not available then it may throw undefined
+        return "JWT Secret not found ";
     }
 }
